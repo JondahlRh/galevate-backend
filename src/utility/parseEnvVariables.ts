@@ -3,7 +3,9 @@ import { z } from "zod";
 const PORT_REGEX = /^\d{1,5}$/;
 const IP_REGEX = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
 
-const envObject = z.object({});
+const envObject = z.object({
+  PORT: z.string().regex(PORT_REGEX),
+});
 
 declare global {
   namespace NodeJS {

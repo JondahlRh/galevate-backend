@@ -18,7 +18,7 @@ pnpm dev
 ## Envirement Variables
 
 ```bash
-
+PORT=""
 ```
 
 ## Example docker-compose setup
