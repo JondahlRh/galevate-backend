@@ -1,6 +1,6 @@
-# repo-name
+# Galevate Backend
 
-repo-description
+Backend for Galevate
 
 ## Dependencies and Development
 
@@ -25,10 +25,10 @@ pnpm dev
 
 ```bash
 # windows
-docker-compose -f .\docker-compose.local.yml -p repo-name up --build
+docker-compose -f .\docker-compose.local.yml -p galevate-backend up --build
 
 # linux
-docker-compose -f ./docker-compose.local.yml -p repo-name up --build
+docker-compose -f ./docker-compose.local.yml -p galevate-backend up --build
 ```
 
 ```yaml filename="docker-compose.local.yml"
@@ -37,8 +37,8 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
-    image: repo-name:latest
-    container_name: repo-name
+    image: galevate-backend:latest
+    container_name: galevate-backend
     restart: unless-stopped
     env_file:
       - ../.env

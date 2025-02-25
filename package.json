@@ -1,7 +1,7 @@
 {
-  "name": "repo-name", 
+  "name": "galevate-backend",
   "version": "1.0.0",
-  "description": "repo-description", 
+  "description": "Backend for Galevate",
   "author": "Jondahl \"Gamix\" Rhenius",
   "type": "module",
   "scripts": {
