@@ -20,7 +20,7 @@ export default async function app() {
   app.after(() => {
     app.register(
       (route) => {
-        ping(route, "GET", "/ping");
+        ping(route, "/ping", "GET");
       },
       { prefix: env.ROUTE_PREFIX },
     );

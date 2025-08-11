@@ -4,12 +4,12 @@ import z from "zod/v4";
 
 export default function ping(
   app: FastifyInstance,
+  path: `/${string}`,
   method: HTTPMethods,
-  url: `/${string}`,
 ) {
   app.withTypeProvider<ZodTypeProvider>().route({
     method,
-    url,
+    url: path,
     schema: {
       querystring: z.object({ name: z.string().min(4) }),
       response: { 200: z.string() },
