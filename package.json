@@ -11,6 +11,7 @@
     "dev": "tsc && pnpm run \"/dev:/\"",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "dev:node": "node --enable-source-maps --watch --env-file=.env build/index.js",
+    "lint": "eslint",
     "format": "prettier --check . --write"
   },
   "keywords": [],
@@ -26,11 +27,16 @@
     "zod": "^4.0.17"
   },
   "devDependencies": {
+    "@eslint/js": "^9.33.0",
     "@total-typescript/ts-reset": "^0.6.1",
     "@total-typescript/tsconfig": "^1.0.4",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/node": "^24.2.1",
+    "eslint": "^9.33.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^16.3.0",
     "prettier": "^3.6.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.39.0"
   }
 }

@@ -6,5 +6,6 @@ import {
 
 export default function middlewareTypeProvider(app: FastifyInstance) {
   app.setValidatorCompiler(validatorCompiler);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   app.setSerializerCompiler(serializerCompiler);
 }

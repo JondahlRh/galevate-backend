@@ -8,8 +8,8 @@ const envObject = z.object({
 
 const parsed = envObject.safeParse(process.env);
 if (!parsed.success) {
-  console.error("❌ Invalid environment variables!");
-  throw z.treeifyError(parsed.error).properties;
+  console.error(z.treeifyError(parsed.error).properties);
+  throw new Error("❌ Invalid environment variables!");
 }
 
 console.log("✅ Environment variables parsed successfully...");
