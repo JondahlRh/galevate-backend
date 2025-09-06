@@ -8,9 +8,13 @@ import errorRoute from "./routes/error.js";
 import faceit from "./routes/faceit/index.js";
 import ping from "./routes/ping.js";
 import FaceitApiService from "./services/faceitApiService/FaceitApiService.js";
+import JsonLoggerService from "./services/jsonLoggerService/jsonLoggerService.js";
 
 export default async function app() {
   const faceitApiService = FaceitApiService.connect();
+
+  const loggerServicePlayerIds = JsonLoggerService.connect("playerIds.json");
+  const loggerServiceUsers = JsonLoggerService.connect("users.json");
 
   const app = fastify({
     logger: env.ENVIRONMENT === "dev",
@@ -28,7 +32,11 @@ export default async function app() {
 
         route.register(faceit, {
           prefix: "/faceit",
-          config: { faceitApiService },
+          config: {
+            faceitApiService,
+            loggerServicePlayerIds,
+            loggerServiceUsers,
+          },
         });
       },
       { prefix: env.ROUTE_PREFIX },

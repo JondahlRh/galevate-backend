@@ -8,13 +8,17 @@ import FaceitPlayerEloDto, {
   FaceitPlayerEloTodayDto,
 } from "../../../classes/FaceitPlayerEloDto.js";
 import type FaceitApiService from "../../../services/faceitApiService/FaceitApiService.js";
+import type JsonLoggerService from "../../../services/jsonLoggerService/jsonLoggerService.js";
 
 type Config = {
   faceitApiService: FaceitApiService;
+  loggerServicePlayerIds: JsonLoggerService;
+  loggerServiceUsers: JsonLoggerService;
 };
 
 export default function elo(app: FastifyInstance, options: { config: Config }) {
-  const { faceitApiService } = options.config;
+  const { faceitApiService, loggerServicePlayerIds, loggerServiceUsers } =
+    options.config;
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
@@ -139,6 +143,17 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
             ),
           );
         }
+      }
+
+      loggerServicePlayerIds.log(player.player_id);
+
+      const nightBotHeader = req.headers["nightbot-user"];
+      console.log(req.headers);
+      if (nightBotHeader !== undefined && typeof nightBotHeader === "string") {
+        const params = new URLSearchParams(nightBotHeader);
+        const twitchName = params.get("name");
+
+        if (twitchName !== null) loggerServiceUsers.log(twitchName);
       }
 
       if (format === "json") {
