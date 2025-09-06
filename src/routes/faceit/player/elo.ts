@@ -53,8 +53,11 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
 
       const returnData = new FaceitPlayerEloDto();
 
-      // get player id (check if uuid or name)
-      const id = nickname ?? req.params.id;
+      let id = nickname;
+      if (id === undefined || id.length === 0) {
+        id = req.params.id;
+      }
+
       const player = await faceitApiService.getPlayer(id);
       if (
         player === undefined ||
@@ -148,7 +151,6 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
       loggerServicePlayerIds.log(player.player_id);
 
       const nightBotHeader = req.headers["nightbot-user"];
-      console.log(req.headers);
       if (nightBotHeader !== undefined && typeof nightBotHeader === "string") {
         const params = new URLSearchParams(nightBotHeader);
         const twitchName = params.get("name");
