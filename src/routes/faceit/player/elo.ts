@@ -150,7 +150,7 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
 
       loggerServicePlayerIds.log(player.player_id);
 
-      const nightBotHeader = req.headers["nightbot-user"];
+      const nightBotHeader = req.headers["nightbot-channel"];
       if (nightBotHeader !== undefined && typeof nightBotHeader === "string") {
         const params = new URLSearchParams(nightBotHeader);
         const twitchName = params.get("name");
