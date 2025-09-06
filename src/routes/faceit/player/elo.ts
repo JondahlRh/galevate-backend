@@ -1,0 +1,150 @@
+import type { FastifyInstance } from "fastify";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import { z } from "zod/v4";
+
+import FaceitPlayerEloDto, {
+  FaceitPlayerEloCurrentDto,
+  FaceitPlayerEloRankingDto,
+  FaceitPlayerEloTodayDto,
+} from "../../../classes/FaceitPlayerEloDto.js";
+import type FaceitApiService from "../../../services/faceitApiService/FaceitApiService.js";
+
+type Config = {
+  faceitApiService: FaceitApiService;
+};
+
+export default function elo(app: FastifyInstance, options: { config: Config }) {
+  const { faceitApiService } = options.config;
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "",
+    schema: {
+      params: z.object({ id: z.string() }),
+      querystring: z
+        .object({
+          format: z.enum(["json", "text"]),
+          nickname: z.string(),
+          game: z.enum(["cs2", "csgo"]),
+
+          minimal: z.stringbool(),
+
+          position: z.stringbool(),
+          today: z.stringbool(),
+          current: z.stringbool(),
+        })
+        .partial(),
+      response: { 200: z.any() },
+    },
+    handler: async (req, res) => {
+      const {
+        format = "text",
+        nickname,
+        game = "cs2",
+        minimal = false,
+        position = false,
+        today = false,
+        current = false,
+      } = req.query;
+
+      const returnData = new FaceitPlayerEloDto();
+
+      // get player id (check if uuid or name)
+      const id = nickname ?? req.params.id;
+      const player = await faceitApiService.getPlayer(id);
+      if (
+        player === undefined ||
+        player.player_id === undefined ||
+        player.nickname === undefined
+      ) {
+        return res.code(404).send("player not found");
+      }
+
+      returnData.addId(player.player_id).addName(player.nickname);
+
+      // get player elo
+      const gameData = player.games?.[game];
+      if (
+        gameData === undefined ||
+        gameData.skill_level === undefined ||
+        gameData.faceit_elo === undefined
+      ) {
+        return res.code(404).send(`player did not play ${game} yet`);
+      }
+      returnData.addLevel(gameData.skill_level).addElo(gameData.faceit_elo);
+
+      // get player position
+      if (!minimal || position) {
+        if (gameData.region === undefined || player.country === undefined) {
+          return res.code(404).send(`player did not play ${game} yet`);
+        }
+
+        const response = await faceitApiService.getPosition(
+          player.player_id,
+          game,
+          gameData.region,
+          player.country,
+        );
+        if (
+          !response.success ||
+          response.data.country.position === undefined ||
+          response.data.region.position === undefined
+        ) {
+          return res.code(404).send(`player did not play ${game} yet`);
+        }
+
+        returnData.addCountry(
+          new FaceitPlayerEloRankingDto(
+            player.country,
+            response.data.country.position,
+          ),
+        );
+        returnData.addRegion(
+          new FaceitPlayerEloRankingDto(
+            gameData.region,
+            response.data.region.position,
+          ),
+        );
+      }
+
+      // get player today elo
+      if (!minimal || today) {
+        const response = await faceitApiService.getToday(
+          player.player_id,
+          game,
+          gameData.faceit_elo,
+        );
+        if (response.success) {
+          returnData.addToday(
+            new FaceitPlayerEloTodayDto(
+              response.data.matches,
+              response.data.wins,
+              response.data.loses,
+              response.data.today,
+            ),
+          );
+        }
+      }
+
+      // get player current elo
+      if (!minimal || current) {
+        const response = await faceitApiService.getCurrent(player.player_id);
+        if (response.success) {
+          returnData.addCurrent(
+            new FaceitPlayerEloCurrentDto(
+              response.data.name,
+              response.data.map,
+              response.data.gain,
+              response.data.loss,
+            ),
+          );
+        }
+      }
+
+      if (format === "json") {
+        return res.code(200).send(returnData.toJson());
+      }
+      return res.code(200).send(returnData.toString());
+    },
+  });
+}

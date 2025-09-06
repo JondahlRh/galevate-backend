@@ -1,15 +1,11 @@
-import type { FastifyInstance, HTTPMethods } from "fastify";
+import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod/v4";
 
-export default function ping(
-  app: FastifyInstance,
-  path: `/${string}`,
-  method: HTTPMethods,
-) {
+export default function ping(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().route({
-    method,
-    url: path,
+    method: "GET",
+    url: "",
     schema: {
       querystring: z.object({ name: z.string().min(4) }),
       response: { 200: z.string() },
