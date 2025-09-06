@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod/v4";
 
+import env from "../../../env.js";
 import type FaceitApiService from "../../../services/faceitApiService/FaceitApiService.js";
 
 type Config = {
@@ -30,18 +31,21 @@ export default function getCommand(
         return res.code(404).send("player not found");
       }
 
-      const fullUrlWithoutPath = `${req.protocol}://${req.host}`;
+      let fullUrlWithoutPath = `${req.protocol}://${req.host}`;
+      if (env.ROUTE_PREFIX !== undefined) {
+        fullUrlWithoutPath += env.ROUTE_PREFIX;
+      }
 
       if (bot === "nightbot") {
         let response = "Bot: nightbot\n\n";
-        response += `Add new Command:       !addcom !elo $(urlfetch ${fullUrlWithoutPath}/faceit/player/${player.player_id}/elo?nickname=$(querystring))\n`;
-        response += `Edit existing Command: !editcom !elo $(urlfetch ${fullUrlWithoutPath}/faceit/player/${player.player_id}/elo?nickname=$(querystring))\n`;
+        response += `Add new Command:       !addcom !elo $(urlfetch ${fullUrlWithoutPath}/faceit/player/elo/${player.player_id}?nickname=$(querystring))\n`;
+        response += `Edit existing Command: !editcom !elo $(urlfetch ${fullUrlWithoutPath}/faceit/player/elo/${player.player_id}?nickname=$(querystring))\n`;
         return res.code(200).send(response);
       }
 
       let response = "Bot not found, available bot(s): nightbot\n\n";
-      response += `Url to be used:                ${fullUrlWithoutPath}/faceit/player/${player.player_id}/elo\n`;
-      response += `Url with optional querystring: ${fullUrlWithoutPath}/faceit/player/${player.player_id}/elo?nickname=<optional_querystring>\n\n`;
+      response += `Url to be used:                ${fullUrlWithoutPath}/faceit/player/elo/${player.player_id}\n`;
+      response += `Url with optional querystring: ${fullUrlWithoutPath}/faceit/player/elo/${player.player_id}?nickname=<optional_querystring>\n\n`;
       response += `=> replace "<optional_querystring>" with bot specific variable\n`;
       return res.code(200).send(response);
     },
