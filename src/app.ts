@@ -15,6 +15,7 @@ export default async function app() {
 
   const loggerServicePlayerIds = JsonLoggerService.connect("playerIds.json");
   const loggerServiceUsers = JsonLoggerService.connect("users.json");
+  const loggerServiceBots = JsonLoggerService.connect("bots.json");
 
   const app = fastify({
     logger: env.ENVIRONMENT === "dev",
@@ -36,6 +37,7 @@ export default async function app() {
             faceitApiService,
             loggerServicePlayerIds,
             loggerServiceUsers,
+            loggerServiceBots,
           },
         });
       },

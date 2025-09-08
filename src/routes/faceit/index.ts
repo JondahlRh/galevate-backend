@@ -8,6 +8,7 @@ type Config = {
   faceitApiService: FaceitApiService;
   loggerServicePlayerIds: JsonLoggerService;
   loggerServiceUsers: JsonLoggerService;
+  loggerServiceBots: JsonLoggerService;
 };
 
 export default function faceit(

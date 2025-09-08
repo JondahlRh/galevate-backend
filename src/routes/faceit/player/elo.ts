@@ -14,11 +14,16 @@ type Config = {
   faceitApiService: FaceitApiService;
   loggerServicePlayerIds: JsonLoggerService;
   loggerServiceUsers: JsonLoggerService;
+  loggerServiceBots: JsonLoggerService;
 };
 
 export default function elo(app: FastifyInstance, options: { config: Config }) {
-  const { faceitApiService, loggerServicePlayerIds, loggerServiceUsers } =
-    options.config;
+  const {
+    faceitApiService,
+    loggerServicePlayerIds,
+    loggerServiceUsers,
+    loggerServiceBots,
+  } = options.config;
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
@@ -149,6 +154,11 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
       }
 
       loggerServicePlayerIds.log(player.player_id);
+
+      const userAgentHeader = req.headers["user-agent"];
+      if (userAgentHeader !== undefined) {
+        loggerServiceBots.log(userAgentHeader);
+      }
 
       const nightBotHeader = req.headers["nightbot-channel"];
       if (nightBotHeader !== undefined && typeof nightBotHeader === "string") {
