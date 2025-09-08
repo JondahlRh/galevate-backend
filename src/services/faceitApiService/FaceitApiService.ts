@@ -141,7 +141,7 @@ export default class FaceitApiService {
 
     const { faction1, faction2 } = responseMatchDetails.data.teams;
     const isFaction1 = faction1.roster.some((x) => x.id === id);
-    const isHub = faction1.stats !== undefined;
+    const isHub = faction1.stats === undefined;
 
     const faction1EloSum = faction1.roster.reduce((a, b) => a + b.elo, 0);
     const faction2EloSum = faction2.roster.reduce((a, b) => a + b.elo, 0);
@@ -149,15 +149,15 @@ export default class FaceitApiService {
     const faction1EloAvg = faction1EloSum / faction1.roster.length;
     const faction2EloAvg = faction2EloSum / faction2.roster.length;
 
-    let gain: number;
+    let gainLossData: { gain: number; loss: number };
     if (isHub) {
-      gain = FaceitApiService.calculateGainHub(
+      gainLossData = FaceitApiService.calculateGainLossHub(
         isFaction1,
         faction1EloAvg,
         faction2EloAvg,
       );
     } else {
-      gain = FaceitApiService.calculateGain(
+      gainLossData = FaceitApiService.calculateGainLoss(
         isSuperMatch,
         isFaction1,
         faction1.stats?.winProbability ?? 0.5,
@@ -169,8 +169,8 @@ export default class FaceitApiService {
       data: {
         name: responseMatchDetails.data.entity.name,
         map: responseMatchDetails.data.voting?.map.pick[0] ?? null,
-        gain: gain,
-        loss: 50 - gain,
+        gain: gainLossData.gain,
+        loss: gainLossData.loss,
       },
     };
   }
@@ -343,23 +343,27 @@ export default class FaceitApiService {
     return { success: true as const, data: matchId };
   }
 
-  private static calculateGain(
+  private static calculateGainLoss(
     isSuperMatch: boolean,
     isFaction1: boolean,
     winProbability: number,
   ) {
     const maxElo = isSuperMatch ? 60 : 50;
     const faction1Gain = Math.round(maxElo - winProbability * maxElo);
-    return isFaction1 ? faction1Gain : maxElo - faction1Gain;
+
+    if (isFaction1) return { gain: faction1Gain, loss: maxElo - faction1Gain };
+    return { gain: maxElo - faction1Gain, loss: faction1Gain };
   }
 
-  private static calculateGainHub(
+  private static calculateGainLossHub(
     isFaction1: boolean,
     faction1EloAvg: number,
     faction2EloAvg: number,
   ) {
     const difFactor = Math.pow(10, (faction2EloAvg - faction1EloAvg) / 400);
     const faction1Gain = Math.round(50 * (1 - 1 / (1 + difFactor)));
-    return isFaction1 ? faction1Gain : 50 - faction1Gain;
+
+    if (isFaction1) return { gain: faction1Gain, loss: 50 - faction1Gain };
+    return { gain: 50 - faction1Gain, loss: faction1Gain };
   }
 }
