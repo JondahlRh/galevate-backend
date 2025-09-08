@@ -28,7 +28,7 @@ export default function getCommand(
 
       const player = await faceitApiService.getPlayer(req.params.id);
       if (player === undefined || player.player_id === undefined) {
-        return res.code(404).send("player not found");
+        return res.code(200).send("player not found");
       }
 
       let fullUrlWithoutPath = `${req.protocol}://${req.host}`;

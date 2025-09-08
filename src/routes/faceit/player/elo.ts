@@ -69,7 +69,7 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
         player.player_id === undefined ||
         player.nickname === undefined
       ) {
-        return res.code(404).send("player not found");
+        return res.code(200).send("player not found");
       }
 
       returnData.addId(player.player_id).addName(player.nickname);
@@ -81,14 +81,14 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
         gameData.skill_level === undefined ||
         gameData.faceit_elo === undefined
       ) {
-        return res.code(404).send(`player did not play ${game} yet`);
+        return res.code(200).send(`player did not play ${game} yet`);
       }
       returnData.addLevel(gameData.skill_level).addElo(gameData.faceit_elo);
 
       // get player position
       if (!minimal || position) {
         if (gameData.region === undefined || player.country === undefined) {
-          return res.code(404).send(`player did not play ${game} yet`);
+          return res.code(200).send(`player did not play ${game} yet`);
         }
 
         const response = await faceitApiService.getPosition(
@@ -102,7 +102,7 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
           response.data.country.position === undefined ||
           response.data.region.position === undefined
         ) {
-          return res.code(404).send(`player did not play ${game} yet`);
+          return res.code(200).send(`player did not play ${game} yet`);
         }
 
         returnData.addCountry(
@@ -129,7 +129,9 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
 
         if (response.error === "NO_MATCHES") {
           returnData.addToday(new FaceitPlayerEloTodayDto(0, 0, 0, 0));
-        } else if (response.success) {
+        }
+
+        if (response.success) {
           returnData.addToday(
             new FaceitPlayerEloTodayDto(
               response.data.matches,
