@@ -28,8 +28,6 @@ export default class FetchService {
   }
 
   async fetch<T>(url: URL) {
-    console.log(++this.numberOfRequests);
-
     try {
       const response = await fetch(url, {
         headers: {
