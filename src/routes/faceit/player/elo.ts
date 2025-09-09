@@ -63,7 +63,7 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
         id = req.params.id;
       }
 
-      const player = await faceitApiService.getPlayer(id);
+      const player = await faceitApiService.getPlayer(id, game);
       if (
         player === undefined ||
         player.player_id === undefined ||

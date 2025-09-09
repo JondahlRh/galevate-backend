@@ -22,7 +22,7 @@ export default class FaceitApiService {
     return new FaceitApiService();
   }
 
-  async getPlayer(id: string) {
+  async getPlayer(id: string, game = "cs2") {
     const isUUID = z.uuidv4().safeParse(id).success;
     if (isUUID) {
       const response = await this.fetchPlayerByUuid(id);
@@ -31,7 +31,10 @@ export default class FaceitApiService {
     }
 
     const response = await this.fetchPlayerByName(id);
-    if (response.success) return response.data;
+    if (response.success) {
+      const gameData = response.data.games?.[game];
+      if (gameData !== undefined) return response.data;
+    }
 
     const responseSearch = await this.fetchPlayerSearchByName(id);
     if (responseSearch.success) return responseSearch.data;
