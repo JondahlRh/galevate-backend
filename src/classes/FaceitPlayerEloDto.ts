@@ -139,9 +139,9 @@ export default class FaceitPlayerEloDto extends Dto {
     const text: string[] = [];
 
     const level = this.level?.toString() ?? "0";
-    const eloAsNumber = this.elo?? 0;
+    const elo = this.elo?? 0;
 
-    text.push(`${this.name ?? ""} ist FaceIT Level ${level}, Elo ${this.elo?? 0}`);
+    text.push(`${this.name ?? ""} ist FaceIT Level ${level}, Elo ${elo}`);
     if (this.country !== undefined) text.push(this.country.toBotString());
     if (this.current !== undefined) text.push(this.current.toBotString());
     if (this.today !== undefined) text.push(this.today.toBotString());
