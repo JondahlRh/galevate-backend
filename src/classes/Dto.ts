@@ -1,4 +1,4 @@
 export abstract class Dto {
-  abstract toString(): string;
+  abstract toNightbotString(): string;
   abstract toJson(): Record<string, unknown>;
 }

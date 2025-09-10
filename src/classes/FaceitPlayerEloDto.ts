@@ -18,7 +18,7 @@ export class FaceitPlayerEloRankingDto extends Dto {
     this.flag = String.fromCodePoint(...codePoints);
   }
 
-  toString() {
+  toNightbotString() {
     return `Platz ${this.rank.toString()} ${this.flag}`;
   }
 
@@ -42,7 +42,7 @@ export class FaceitPlayerEloCurrentDto extends Dto {
     this.loss = loss;
   }
 
-  toString() {
+  toNightbotString() {
     return `Current: +${this.gain.toString()}/-${this.loss.toString()}`;
   }
 
@@ -66,7 +66,7 @@ export class FaceitPlayerEloTodayDto extends Dto {
     this.elo = elo;
   }
 
-  toString() {
+  toNightbotString() {
     return `Today: ${this.elo.toString()}`;
   }
 
@@ -131,16 +131,16 @@ export default class FaceitPlayerEloDto extends Dto {
     return this;
   }
 
-  toString() {
+  toNightbotString() {
     const text: string[] = [];
 
     const level = this.level?.toString() ?? "0";
     const elo = this.elo?.toString() ?? "0";
 
     text.push(`${this.name ?? ""} ist FaceIT Level ${level}, Elo ${elo}`);
-    if (this.country !== undefined) text.push(this.country.toString());
-    if (this.current !== undefined) text.push(this.current.toString());
-    if (this.today !== undefined) text.push(this.today.toString());
+    if (this.country !== undefined) text.push(this.country.toNightbotString());
+    if (this.current !== undefined) text.push(this.current.toNightbotString());
+    if (this.today !== undefined) text.push(this.today.toNightbotString());
 
     return text.join(" - ");
   }
