@@ -176,7 +176,7 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
       if (format === "json") {
         return res.code(200).send(returnData.toJson());
       }
-      return res.code(200).send(returnData.toNightbotString());
+      return res.code(200).send(returnData.toBotString());
     },
   });
 }
