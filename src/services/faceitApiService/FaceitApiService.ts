@@ -36,8 +36,8 @@ export default class FaceitApiService {
       if (gameData !== undefined) return response.data;
     }
 
-    const responsesearch = await this.fetchPlayerSearchByName(id);
-    if (responsesearch.success) return responsesearch.data;
+    const responseSearch = await this.fetchPlayerSearchByName(id);
+    if (responseSearch.success) return responseSearch.data;
 
     return undefined;
   }
@@ -199,11 +199,11 @@ export default class FaceitApiService {
     url.pathname += "/players";
     url.searchParams.append("nickname", name);
 
-    const responsesearch =
+    const responseSearch =
       await this.fetchServiceV4.fetch<GetFaceitType<"/players">>(url);
-    if (!responsesearch.success) return responsesearch;
+    if (!responseSearch.success) return responseSearch;
 
-    return { success: true as const, data: responsesearch.data };
+    return { success: true as const, data: responseSearch.data };
   }
 
   private async fetchPlayerSearchByName(name: string) {
@@ -212,19 +212,19 @@ export default class FaceitApiService {
     url.searchParams.append("nickname", name);
     url.searchParams.append("limit", "1");
 
-    const responsesearch =
+    const responseSearch =
       await this.fetchServiceV4.fetch<GetFaceitType<"/search/players">>(url);
-    if (!responsesearch.success) return responsesearch;
+    if (!responseSearch.success) return responseSearch;
 
     if (
-      responsesearch.data.items === undefined ||
-      responsesearch.data.items[0] === undefined ||
-      responsesearch.data.items[0].player_id === undefined
+      responseSearch.data.items === undefined ||
+      responseSearch.data.items[0] === undefined ||
+      responseSearch.data.items[0].player_id === undefined
     ) {
       return { success: false as const, error: "PLAYER NOT FOUND" as const };
     }
 
-    const playerId = responsesearch.data.items[0].player_id;
+    const playerId = responseSearch.data.items[0].player_id;
     const response = await this.fetchPlayerByUuid(playerId);
     if (!response.success) return response;
 
