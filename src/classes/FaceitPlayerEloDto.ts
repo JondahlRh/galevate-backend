@@ -58,14 +58,14 @@ export class FaceitPlayerEloTodayDto extends Dto {
   elo: number;
   matchHistory: string
 
-  constructor(matches: number, wins: number, loses: number, elo: number, lastMatches: string) {
+  constructor(matches: number, wins: number, loses: number, elo: number, matchHistory: string) {
     super();
 
     this.matches = matches;
     this.wins = wins;
     this.loses = loses;
     this.elo = elo;
-    this.matchHistory = lastMatches;
+    this.matchHistory = matchHistory;
   }
 
   toBotString() {
