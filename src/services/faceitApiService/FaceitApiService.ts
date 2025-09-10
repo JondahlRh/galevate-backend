@@ -120,8 +120,8 @@ export default class FaceitApiService {
       success: true as const,
       data: {
         matches: responseAllMatches.data.length,
-        wins: mappedAllMatches.filter((x) => x).length,
-        loses: mappedAllMatches.filter((x) => !x).length,
+        wins: mappedAllMatches.filter((win) => win).length,
+        loses: mappedAllMatches.filter((win) => !win).length,
         today: currentElo - oldestMatchElo,
         lastMatches: lastMatches
       },
