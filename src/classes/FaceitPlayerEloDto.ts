@@ -70,7 +70,8 @@ export class FaceitPlayerEloTodayDto extends Dto {
 
   toBotString() {
     const todayElo = this.elo > 0 ? `+${this.elo}` : this.elo.toString()
-    return `Today: ${todayElo} (${this.matchHistory})`;
+    const matchHistory = this.matchHistory.length == 0 ? '' :  `(${this.matchHistory})`
+    return `Today: ${todayElo} ${matchHistory}`;
   }
 
   toJson() {

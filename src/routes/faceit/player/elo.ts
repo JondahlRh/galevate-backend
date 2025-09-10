@@ -128,7 +128,7 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
         );
 
         if (response.error === "NO_MATCHES") {
-          returnData.addToday(new FaceitPlayerEloTodayDto(0, 0, 0, 0, "No Game played today"));
+          returnData.addToday(new FaceitPlayerEloTodayDto(0, 0, 0, 0, ""));
         }
 
         if (response.success) {

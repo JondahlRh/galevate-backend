@@ -79,7 +79,7 @@ export default class FaceitApiService {
     if (oldestMatchId === undefined) {
       return {
         success: true as const,
-        data: { matches: 0, wins: 0, loses: 0, today: 0 , matchHistory: "No game played yet"},
+        data: { matches: 0, wins: 0, loses: 0, today: 0 , matchHistory: ""},
       };
     }
 
@@ -115,6 +115,7 @@ export default class FaceitApiService {
     });
 
     const matchHistory = mappedAllMatches.map((win) => win ? "W" : "L").join("");
+
     return {
       success: true as const,
       data: {
