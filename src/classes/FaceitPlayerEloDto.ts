@@ -56,18 +56,20 @@ export class FaceitPlayerEloTodayDto extends Dto {
   wins: number;
   loses: number;
   elo: number;
+  lastMatches: string
 
-  constructor(matches: number, wins: number, loses: number, elo: number) {
+  constructor(matches: number, wins: number, loses: number, elo: number, lastMatches: string) {
     super();
 
     this.matches = matches;
     this.wins = wins;
     this.loses = loses;
     this.elo = elo;
+    this.lastMatches = lastMatches;
   }
 
   toBotString() {
-    return `Today: ${this.elo.toString()}`;
+    return `Today: ${this.elo.toString()} (${this.lastMatches})`;
   }
 
   toJson() {
@@ -76,6 +78,7 @@ export class FaceitPlayerEloTodayDto extends Dto {
       wins: this.wins,
       loses: this.loses,
       elo: this.elo,
+      lastMatches: this.lastMatches
     };
   }
 }
