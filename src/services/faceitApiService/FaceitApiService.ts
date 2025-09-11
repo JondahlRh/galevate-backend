@@ -114,7 +114,7 @@ export default class FaceitApiService {
         : x.results?.winner === "faction2";
     });
 
-    const matchHistory = mappedAllMatches.map((win) => win ? "W" : "L").join("");
+    const matchHistory = mappedAllMatches.map((win) => win ? "W" : "L").slice(0, 2).join("");
 
     return {
       success: true as const,
