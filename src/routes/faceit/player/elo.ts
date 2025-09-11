@@ -128,7 +128,7 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
         );
 
         if (response.error === "NO_MATCHES") {
-          returnData.addToday(new FaceitPlayerEloTodayDto(0, 0, 0, 0));
+          returnData.addToday(new FaceitPlayerEloTodayDto(0, 0, 0, 0, ""));
         }
 
         if (response.success) {
@@ -138,6 +138,7 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
               response.data.wins,
               response.data.loses,
               response.data.today,
+              response.data.matchHistory
             ),
           );
         }
@@ -176,7 +177,7 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
       if (format === "json") {
         return res.code(200).send(returnData.toJson());
       }
-      return res.code(200).send(returnData.toString());
+      return res.code(200).send(returnData.toBotString());
     },
   });
 }

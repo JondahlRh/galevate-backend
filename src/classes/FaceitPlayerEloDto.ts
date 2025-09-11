@@ -18,7 +18,7 @@ export class FaceitPlayerEloRankingDto extends Dto {
     this.flag = String.fromCodePoint(...codePoints);
   }
 
-  toString() {
+  toBotString() {
     return `Platz ${this.rank.toString()} ${this.flag}`;
   }
 
@@ -42,7 +42,7 @@ export class FaceitPlayerEloCurrentDto extends Dto {
     this.loss = loss;
   }
 
-  toString() {
+  toBotString() {
     return `Current: +${this.gain.toString()}/-${this.loss.toString()}`;
   }
 
@@ -56,18 +56,22 @@ export class FaceitPlayerEloTodayDto extends Dto {
   wins: number;
   loses: number;
   elo: number;
+  matchHistory: string
 
-  constructor(matches: number, wins: number, loses: number, elo: number) {
+  constructor(matches: number, wins: number, loses: number, elo: number, matchHistory: string) {
     super();
 
     this.matches = matches;
     this.wins = wins;
     this.loses = loses;
     this.elo = elo;
+    this.matchHistory = matchHistory;
   }
 
-  toString() {
-    return `Today: ${this.elo.toString()}`;
+  toBotString() {
+    const todayElo = this.elo > 0 ? `+${this.elo}` : this.elo.toString()
+    const matchHistory = this.matchHistory.length == 0 ? '' :  `(${this.matchHistory})`
+    return `Today: ${todayElo} ${matchHistory}`;
   }
 
   toJson() {
@@ -76,6 +80,7 @@ export class FaceitPlayerEloTodayDto extends Dto {
       wins: this.wins,
       loses: this.loses,
       elo: this.elo,
+      lastMatches: this.matchHistory
     };
   }
 }
@@ -131,16 +136,16 @@ export default class FaceitPlayerEloDto extends Dto {
     return this;
   }
 
-  toString() {
+  toBotString() {
     const text: string[] = [];
 
     const level = this.level?.toString() ?? "0";
-    const elo = this.elo?.toString() ?? "0";
+    const elo = this.elo?? 0;
 
     text.push(`${this.name ?? ""} ist FaceIT Level ${level}, Elo ${elo}`);
-    if (this.country !== undefined) text.push(this.country.toString());
-    if (this.current !== undefined) text.push(this.current.toString());
-    if (this.today !== undefined) text.push(this.today.toString());
+    if (this.country !== undefined) text.push(this.country.toBotString());
+    if (this.current !== undefined) text.push(this.current.toBotString());
+    if (this.today !== undefined) text.push(this.today.toBotString());
 
     return text.join(" - ");
   }

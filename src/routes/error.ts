@@ -4,9 +4,9 @@ import {
   isResponseSerializationError,
 } from "fastify-type-provider-zod";
 
-import InternalServerError from "../classes/respones/general/InternalServerError.js";
-import SwaggerSerializationError from "../classes/respones/swagger/SwaggerSerializationError.js";
-import SwaggerValidationError from "../classes/respones/swagger/SwaggerValidationError.js";
+import InternalServerError from "../classes/responses/general/InternalServerError.js";
+import SwaggerSerializationError from "../classes/responses/swagger/SwaggerSerializationError.js";
+import SwaggerValidationError from "../classes/responses/swagger/SwaggerValidationError.js";
 
 export default function errorRoute(app: FastifyInstance) {
   app.setErrorHandler((err, req, res) => {
