@@ -143,7 +143,8 @@ export default class FaceitApiService {
     );
     if (!responseMatchDetails.success) return responseMatchDetails;
 
-    const isSuperMatch = responseMatchDetails.data.tags.includes("super");
+    const isSuperMatch =
+      responseMatchDetails.data.tags?.includes("super") ?? false;
 
     const { faction1, faction2 } = responseMatchDetails.data.teams;
     const isFaction1 = faction1.roster.some((x) => x.id === id);
@@ -307,7 +308,7 @@ export default class FaceitApiService {
           faction1: factionZodObject,
           faction2: factionZodObject,
         }),
-        tags: z.array(z.string()),
+        tags: z.array(z.string()).optional(),
         entity: z.object({ name: z.string() }),
         voting: z
           .object({ map: z.object({ pick: z.array(z.string()) }) })
