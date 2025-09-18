@@ -26,10 +26,13 @@ export default function getCommand(
     handler: async (req, res) => {
       const { bot = "nightbot" } = req.query;
 
-      const player = await faceitApiService.getPlayer(req.params.id);
-      if (player === undefined || player.player_id === undefined) {
+      const playerResponse = await faceitApiService.getPlayer(req.params.id);
+
+      if (!playerResponse.success) {
         return res.code(200).send("player not found");
       }
+
+      const { data: player } = playerResponse;
 
       let fullUrlWithoutPath = `${req.protocol}://${req.host}`;
       if (env.ROUTE_PREFIX !== undefined) {

@@ -63,59 +63,39 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
         id = req.params.id;
       }
 
-      const player = await faceitApiService.getPlayer(id, game);
-      if (
-        player === undefined ||
-        player.player_id === undefined ||
-        player.nickname === undefined
-      ) {
+      const playerResponse = await faceitApiService.getPlayer(id, game);
+      if (!playerResponse.success) {
         return res.code(200).send("player not found");
       }
+
+      const { data: player } = playerResponse;
 
       returnData.addId(player.player_id).addName(player.nickname);
 
       // get player elo
-      const gameData = player.games?.[game];
-      if (
-        gameData === undefined ||
-        gameData.skill_level === undefined ||
-        gameData.faceit_elo === undefined
-      ) {
+      const gameData = player.games[game];
+      if (gameData === undefined) {
         return res.code(200).send(`player did not play ${game} yet`);
       }
       returnData.addLevel(gameData.skill_level).addElo(gameData.faceit_elo);
 
       // get player position
       if (!minimal || position) {
-        if (gameData.region === undefined || player.country === undefined) {
-          return res.code(200).send(`player did not play ${game} yet`);
-        }
-
         const response = await faceitApiService.getPosition(
           player.player_id,
           game,
           gameData.region,
           player.country,
         );
-        if (
-          !response.success ||
-          response.data.country.position === undefined ||
-          response.data.region.position === undefined
-        ) {
+        if (!response.success) {
           return res.code(200).send(`player did not play ${game} yet`);
         }
 
         returnData.addCountry(
-          new FaceitPlayerEloRankingDto(
-            player.country,
-            response.data.country.position,
-          ),
+          new FaceitPlayerEloRankingDto(player.country, response.data.country),
         );
         returnData.addRegion(
-          new FaceitPlayerEloRankingDto(
-            gameData.region,
-            response.data.region.position,
-          ),
+          new FaceitPlayerEloRankingDto(gameData.region, response.data.region),
         );
       }
 
@@ -127,18 +107,12 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
           gameData.faceit_elo,
         );
 
-        if (response.error === "NO_MATCHES") {
-          returnData.addToday(new FaceitPlayerEloTodayDto(0, 0, 0, 0, ""));
-        }
-
         if (response.success) {
           returnData.addToday(
             new FaceitPlayerEloTodayDto(
               response.data.matches,
-              response.data.wins,
-              response.data.loses,
+              response.data.hasWonArray,
               response.data.today,
-              response.data.matchHistory,
             ),
           );
         }
@@ -177,7 +151,7 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
       if (format === "json") {
         return res.code(200).send(returnData.toJson());
       }
-      return res.code(200).send(returnData.toBotString());
+      return res.code(200).send(returnData.toText());
     },
   });
 }

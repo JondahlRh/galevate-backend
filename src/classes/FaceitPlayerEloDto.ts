@@ -18,7 +18,7 @@ export class FaceitPlayerEloRankingDto extends Dto {
     this.flag = String.fromCodePoint(...codePoints);
   }
 
-  toBotString() {
+  toText() {
     return `Platz ${this.rank.toString()} ${this.flag}`;
   }
 
@@ -42,7 +42,7 @@ export class FaceitPlayerEloCurrentDto extends Dto {
     this.loss = loss;
   }
 
-  toBotString() {
+  toText() {
     return `Current: +${this.gain.toString()}/-${this.loss.toString()}`;
   }
 
@@ -56,30 +56,30 @@ export class FaceitPlayerEloTodayDto extends Dto {
   wins: number;
   loses: number;
   elo: number;
-  matchHistory: string;
+  lastMatches: string;
 
-  constructor(
-    matches: number,
-    wins: number,
-    loses: number,
-    elo: number,
-    matchHistory: string,
-  ) {
+  constructor(matches: number, hasWonArray: boolean[], elo: number) {
     super();
 
     this.matches = matches;
-    this.wins = wins;
-    this.loses = loses;
+    this.wins = hasWonArray.filter((x) => x).length;
+    this.loses = hasWonArray.filter((x) => !x).length;
     this.elo = elo;
-    this.matchHistory = matchHistory;
+    this.lastMatches = hasWonArray
+      .map((x) => (x ? "W" : "L"))
+      .slice(0, 5)
+      .reverse()
+      .join("");
   }
 
-  toBotString() {
-    const todayElo =
-      this.elo > 0 ? `+${this.elo.toString()}` : this.elo.toString();
-    const matchHistory =
-      this.matchHistory.length == 0 ? "" : `(${this.matchHistory})`;
-    return `Today: ${todayElo} ${matchHistory}`;
+  toText() {
+    let todayElo = this.elo.toString();
+    if (this.elo > 0) todayElo = `+${todayElo}`;
+
+    let result = `Today: ${todayElo}`;
+    if (this.matches > 0) result += ` (${this.lastMatches})`;
+
+    return result;
   }
 
   toJson() {
@@ -88,7 +88,7 @@ export class FaceitPlayerEloTodayDto extends Dto {
       wins: this.wins,
       loses: this.loses,
       elo: this.elo,
-      lastMatches: this.matchHistory,
+      lastMatches: this.lastMatches,
     };
   }
 }
@@ -144,7 +144,7 @@ export default class FaceitPlayerEloDto extends Dto {
     return this;
   }
 
-  toBotString() {
+  toText() {
     const text: string[] = [];
 
     const level = this.level ?? 0;
@@ -153,9 +153,9 @@ export default class FaceitPlayerEloDto extends Dto {
     text.push(
       `${this.name ?? ""} ist FaceIT Level ${level.toString()}, Elo ${elo.toString()}`,
     );
-    if (this.country !== undefined) text.push(this.country.toBotString());
-    if (this.current !== undefined) text.push(this.current.toBotString());
-    if (this.today !== undefined) text.push(this.today.toBotString());
+    if (this.country !== undefined) text.push(this.country.toText());
+    if (this.current !== undefined) text.push(this.current.toText());
+    if (this.today !== undefined) text.push(this.today.toText());
 
     return text.join(" - ");
   }

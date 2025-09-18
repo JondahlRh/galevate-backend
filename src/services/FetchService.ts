@@ -21,8 +21,6 @@ class FetchSuccess<T> {
 export default class FetchService {
   private authHeader?: string;
 
-  numberOfRequests = 0;
-
   constructor(apiKey?: string) {
     if (apiKey !== undefined) this.authHeader = `Bearer ${apiKey}`;
   }

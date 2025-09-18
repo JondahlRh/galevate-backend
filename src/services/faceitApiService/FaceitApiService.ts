@@ -3,6 +3,11 @@ import { z } from "zod/v4";
 
 import env from "../../env.js";
 import FetchService from "../FetchService.js";
+import {
+  customCurrentMatchZodObject,
+  customMatchDetailsZodObject,
+  playerZodObject,
+} from "./schemas.js";
 import type { GetFaceitType } from "./types.js";
 
 moment.locale("de");
@@ -26,20 +31,45 @@ export default class FaceitApiService {
     const isUUID = z.uuidv4().safeParse(id).success;
     if (isUUID) {
       const response = await this.fetchPlayerByUuid(id);
-      if (response.success) return response.data;
-      return undefined;
+      if (!response.success) {
+        return {
+          success: false as const,
+          error: "PLAYER_NOT_FOUND" as const,
+        };
+      }
+
+      const zodResponse = playerZodObject.safeParse(response.data);
+      if (!zodResponse.success) {
+        return { success: false as const, error: "ZOD_ERROR" as const };
+      }
+
+      return { success: true as const, data: zodResponse.data };
     }
 
-    const response = await this.fetchPlayerByName(id);
-    if (response.success) {
-      const gameData = response.data.games?.[game];
-      if (gameData !== undefined) return response.data;
+    const responseName = await this.fetchPlayerByName(id);
+    if (responseName.success && responseName.data.games?.[game] !== undefined) {
+      const zodResponse = playerZodObject.safeParse(responseName.data);
+      if (!zodResponse.success) {
+        return { success: false as const, error: "ZOD_ERROR" as const };
+      }
+
+      return { success: true as const, data: zodResponse.data };
     }
 
     const responseSearch = await this.fetchPlayerSearchByName(id);
-    if (responseSearch.success) return responseSearch.data;
+    if (!responseSearch.success) {
+      return {
+        success: false as const,
+        error: "PLAYER_NOT_FOUND" as const,
+      };
+    }
 
-    return undefined;
+    const zodResponse = playerZodObject.safeParse(responseSearch.data);
+    if (!zodResponse.success) {
+      return { success: false as const, error: "ZOD_ERROR" as const };
+    }
+
+    return { success: true as const, data: zodResponse.data };
   }
 
   async getPosition(id: string, game: string, region: string, country: string) {
@@ -66,43 +96,56 @@ export default class FaceitApiService {
 
     return {
       success: true as const,
-      data: { region: regionPosition.data, country: countryPosition.data },
+      data: {
+        region: regionPosition.data.position ?? 0,
+        country: countryPosition.data.position ?? 0,
+      },
     };
   }
 
   async getToday(id: string, game: string, currentElo: number) {
     const responseAllMatches = await this.fetchTodayMatches(id, game);
-    if (!responseAllMatches.success) return responseAllMatches;
+    if (!responseAllMatches.success) {
+      return {
+        success: false as const,
+        error: "MATCHES_NOT_FOUND" as const,
+      };
+    }
 
-    const oldestMatchId =
-      responseAllMatches.data[responseAllMatches.data.length - 1]?.match_id;
+    const lastIndex = responseAllMatches.data.length - 1;
+    const oldestMatchId = responseAllMatches.data[lastIndex]?.match_id;
     if (oldestMatchId === undefined) {
       return {
         success: true as const,
-        data: { matches: 0, wins: 0, loses: 0, today: 0, matchHistory: "" },
+        data: { matches: 0, hasWonArray: [], today: 0 },
       };
     }
 
     const responseMatchDetails =
       await this.fetchCustomMatchDetails(oldestMatchId);
-    if (!responseMatchDetails.success) return responseMatchDetails;
-
-    let oldestMatchElo: number | undefined;
-    const findFaction1 = responseMatchDetails.data.teams.faction1.roster.find(
-      (x) => x.id === id,
-    );
-    if (findFaction1 !== undefined) oldestMatchElo = findFaction1.elo;
-
-    const findFaction2 = responseMatchDetails.data.teams.faction2.roster.find(
-      (x) => x.id === id,
-    );
-    if (findFaction2 !== undefined) oldestMatchElo = findFaction2.elo;
-
-    if (oldestMatchElo === undefined) {
-      return { success: false as const, error: "PLAYER_NOT_IN_MATCH" as const };
+    if (!responseMatchDetails.success) {
+      return {
+        success: false as const,
+        error: "MATCH_DETAILS_NOT_FOUND" as const,
+      };
     }
 
-    const mappedAllMatches = responseAllMatches.data.map((x) => {
+    let oldestMatchPlayer =
+      responseMatchDetails.data.teams.faction1.roster.find((x) => x.id === id);
+    if (oldestMatchPlayer === undefined) {
+      oldestMatchPlayer = responseMatchDetails.data.teams.faction2.roster.find(
+        (x) => x.id === id,
+      );
+    }
+
+    if (oldestMatchPlayer === undefined) {
+      return {
+        success: false as const,
+        error: "PLAYER_NOT_IN_MATCH" as const,
+      };
+    }
+
+    const hasWonArray = responseAllMatches.data.map((x) => {
       const isFaction1 = x.teams?.faction1?.players?.some(
         (x) => x.player_id === id,
       );
@@ -114,20 +157,12 @@ export default class FaceitApiService {
         : x.results?.winner === "faction2";
     });
 
-    const matchHistory = mappedAllMatches
-      .map((win) => (win ? "W" : "L"))
-      .slice(0, 5)
-      .reverse()
-      .join("");
-
     return {
       success: true as const,
       data: {
         matches: responseAllMatches.data.length,
-        wins: mappedAllMatches.filter((win) => win).length,
-        loses: mappedAllMatches.filter((win) => !win).length,
-        today: currentElo - oldestMatchElo,
-        matchHistory: matchHistory,
+        today: currentElo - oldestMatchPlayer.elo,
+        hasWonArray,
       },
     };
   }
@@ -135,17 +170,21 @@ export default class FaceitApiService {
   async getCurrent(id: string) {
     const responseCurrentMatch = await this.fetchCustomCurrentMatch(id);
     if (!responseCurrentMatch.success) {
-      return responseCurrentMatch;
-    }
-
-    if (responseCurrentMatch.data === undefined) {
-      return { success: false as const, error: "NO_CURRENT_MATCH" as const };
+      return {
+        success: false as const,
+        error: "NO_CURRENT_MATCH" as const,
+      };
     }
 
     const responseMatchDetails = await this.fetchCustomMatchDetails(
       responseCurrentMatch.data,
     );
-    if (!responseMatchDetails.success) return responseMatchDetails;
+    if (!responseMatchDetails.success) {
+      return {
+        success: false as const,
+        error: "NO_CURRENT_MATCH" as const,
+      };
+    }
 
     const isSuperMatch =
       responseMatchDetails.data.tags?.includes("super") ?? false;
@@ -287,10 +326,8 @@ export default class FaceitApiService {
       await this.fetchServiceV4.fetch<
         GetFaceitType<"/players/{player_id}/history">
       >(url);
-    if (!response.success) return response;
-
-    if (response.data.items === undefined || response.data.items.length === 0) {
-      return { success: false as const, error: "NO_MATCHES" as const };
+    if (!response.success || response.data.items === undefined) {
+      return { success: false as const, error: "UNKNOWN_ERROR" as const };
     }
 
     return { success: true as const, data: response.data.items };
@@ -298,31 +335,12 @@ export default class FaceitApiService {
 
   private async fetchCustomMatchDetails(matchId: string) {
     const url = new URL(`https://www.faceit.com/api/match/v2/match/${matchId}`);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await this.fetchServiceCustom.fetch<any>(url);
+    const response = await this.fetchServiceCustom.fetch(url);
     if (!response.success) return response;
 
-    const factionZodObject = z.object({
-      roster: z.array(z.object({ id: z.string(), elo: z.number() })),
-      stats: z.object({ winProbability: z.number() }).optional(),
-    });
-    const matchZodObject = z.object({
-      payload: z.object({
-        teams: z.object({
-          faction1: factionZodObject,
-          faction2: factionZodObject,
-        }),
-        tags: z.array(z.string()).optional(),
-        entity: z.object({ name: z.string() }),
-        voting: z
-          .object({ map: z.object({ pick: z.array(z.string()) }) })
-          .optional(),
-      }),
-    });
-
-    const zodResponse = matchZodObject.safeParse(response.data);
+    const zodResponse = customMatchDetailsZodObject.safeParse(response.data);
     if (!zodResponse.success) {
-      return { success: false as const, error: "UNKNOWN ERROR" as const };
+      return { success: false as const, error: "ZOD_ERROR" as const };
     }
 
     return { success: true as const, data: zodResponse.data.payload };
@@ -332,16 +350,12 @@ export default class FaceitApiService {
     const url = new URL(
       `https://www.faceit.com/api/match/v1/matches/groupByState?userId=${playerId}`,
     );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await this.fetchServiceCustom.fetch<any>(url);
+    const response = await this.fetchServiceCustom.fetch(url);
     if (!response.success) return response;
 
-    const matchZodObject = z.object({
-      payload: z.record(z.string(), z.array(z.object({ id: z.string() }))),
-    });
-    const zodResponse = matchZodObject.safeParse(response.data);
+    const zodResponse = customCurrentMatchZodObject.safeParse(response.data);
     if (!zodResponse.success) {
-      return { success: false as const, error: "NO_CURRENT_MATCH" as const };
+      return { success: false as const, error: "ZOD_ERROR" as const };
     }
 
     let matchId: string | undefined;
@@ -349,6 +363,10 @@ export default class FaceitApiService {
       matchId = zodResponse.data.payload.ONGOING[0]?.id;
     } else if (zodResponse.data.payload.READY !== undefined) {
       matchId = zodResponse.data.payload.READY[0]?.id;
+    }
+
+    if (matchId === undefined) {
+      return { success: false as const, error: "NO_CURRENT_MATCH" as const };
     }
 
     return { success: true as const, data: matchId };
@@ -359,11 +377,11 @@ export default class FaceitApiService {
     isFaction1: boolean,
     winProbability: number,
   ) {
-    const maxElo = isSuperMatch ? 60 : 50;
-    const faction1Gain = Math.round(maxElo - winProbability * maxElo);
+    const MAX_ELO = isSuperMatch ? 60 : 50;
+    const faction1Gain = Math.round(MAX_ELO - winProbability * MAX_ELO);
 
-    if (isFaction1) return { gain: faction1Gain, loss: maxElo - faction1Gain };
-    return { gain: maxElo - faction1Gain, loss: faction1Gain };
+    if (isFaction1) return { gain: faction1Gain, loss: MAX_ELO - faction1Gain };
+    return { gain: MAX_ELO - faction1Gain, loss: faction1Gain };
   }
 
   private static calculateGainLossHub(
@@ -371,10 +389,12 @@ export default class FaceitApiService {
     faction1EloAvg: number,
     faction2EloAvg: number,
   ) {
-    const difFactor = Math.pow(10, (faction2EloAvg - faction1EloAvg) / 400);
-    const faction1Gain = Math.round(50 * (1 - 1 / (1 + difFactor)));
+    const MAX_ELO = 50;
 
-    if (isFaction1) return { gain: faction1Gain, loss: 50 - faction1Gain };
-    return { gain: 50 - faction1Gain, loss: faction1Gain };
+    const difFactor = Math.pow(10, (faction2EloAvg - faction1EloAvg) / 400);
+    const faction1Gain = Math.round(MAX_ELO * (1 - 1 / (1 + difFactor)));
+
+    if (isFaction1) return { gain: faction1Gain, loss: MAX_ELO - faction1Gain };
+    return { gain: MAX_ELO - faction1Gain, loss: faction1Gain };
   }
 }
