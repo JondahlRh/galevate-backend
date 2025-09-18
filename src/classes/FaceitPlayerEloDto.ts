@@ -56,9 +56,15 @@ export class FaceitPlayerEloTodayDto extends Dto {
   wins: number;
   loses: number;
   elo: number;
-  matchHistory: string
+  matchHistory: string;
 
-  constructor(matches: number, wins: number, loses: number, elo: number, matchHistory: string) {
+  constructor(
+    matches: number,
+    wins: number,
+    loses: number,
+    elo: number,
+    matchHistory: string,
+  ) {
     super();
 
     this.matches = matches;
@@ -69,8 +75,10 @@ export class FaceitPlayerEloTodayDto extends Dto {
   }
 
   toBotString() {
-    const todayElo = this.elo > 0 ? `+${this.elo}` : this.elo.toString()
-    const matchHistory = this.matchHistory.length == 0 ? '' :  `(${this.matchHistory})`
+    const todayElo =
+      this.elo > 0 ? `+${this.elo.toString()}` : this.elo.toString();
+    const matchHistory =
+      this.matchHistory.length == 0 ? "" : `(${this.matchHistory})`;
     return `Today: ${todayElo} ${matchHistory}`;
   }
 
@@ -80,7 +88,7 @@ export class FaceitPlayerEloTodayDto extends Dto {
       wins: this.wins,
       loses: this.loses,
       elo: this.elo,
-      lastMatches: this.matchHistory
+      lastMatches: this.matchHistory,
     };
   }
 }
@@ -139,10 +147,12 @@ export default class FaceitPlayerEloDto extends Dto {
   toBotString() {
     const text: string[] = [];
 
-    const level = this.level?.toString() ?? "0";
-    const elo = this.elo?? 0;
+    const level = this.level ?? 0;
+    const elo = this.elo ?? 0;
 
-    text.push(`${this.name ?? ""} ist FaceIT Level ${level}, Elo ${elo}`);
+    text.push(
+      `${this.name ?? ""} ist FaceIT Level ${level.toString()}, Elo ${elo.toString()}`,
+    );
     if (this.country !== undefined) text.push(this.country.toBotString());
     if (this.current !== undefined) text.push(this.current.toBotString());
     if (this.today !== undefined) text.push(this.today.toBotString());

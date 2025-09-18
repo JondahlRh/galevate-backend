@@ -138,7 +138,7 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
               response.data.wins,
               response.data.loses,
               response.data.today,
-              response.data.matchHistory
+              response.data.matchHistory,
             ),
           );
         }
