@@ -34,7 +34,6 @@ export default class FetchService {
         },
       });
       if (!response.ok) {
-        console.log(response.statusText);
         return new FetchError("FETCH FAILED");
       }
 

@@ -411,7 +411,6 @@ export default class FaceitApiService {
     let offset = 0;
     let hasMore = true;
     do {
-      console.log(url.toString());
       const response =
         await this.fetchServiceV4.fetch<
           GetFaceitType<"/championships/{championship_id}/matches">
