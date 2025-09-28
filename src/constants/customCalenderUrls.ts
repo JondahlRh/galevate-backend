@@ -70,7 +70,7 @@ export default {
       {
         name: "ARROW Gold",
         teamId: "2a14747b-4a4a-4931-856a-646b97b4ac7a",
-        championshipId: "4ee6b6af-3543-4733-be87-37efaf9f886f",
+        championshipId: "5d3fd88f-80cc-48f9-a1c2-a1cdda19293d",
       },
     ],
   },
