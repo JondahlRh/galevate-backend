@@ -36,3 +36,18 @@ export const customMatchDetailsZodObject = z.object({
 export const customCurrentMatchZodObject = z.object({
   payload: z.record(z.string(), z.array(z.object({ id: z.string() }))),
 });
+
+const matchZodObject = z.object({
+  scheduled_at: z.number().optional(),
+  teams: z.object({
+    faction1: z.object({ faction_id: z.string(), name: z.string() }),
+    faction2: z.object({ faction_id: z.string(), name: z.string() }),
+  }),
+  faceit_url: z.string(),
+});
+
+export const matchReturnZodObject = z.object({
+  items: z.array(matchZodObject),
+  start: z.number(),
+  end: z.number(),
+});

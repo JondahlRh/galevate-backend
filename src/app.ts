@@ -4,6 +4,7 @@ import env from "./env.js";
 import middlewareCors from "./middlewares/cors.js";
 import middlewareDocs from "./middlewares/docs.js";
 import middlewareTypeProvider from "./middlewares/typeProvider.js";
+import calender from "./routes/calender/index.js";
 import errorRoute from "./routes/error.js";
 import faceit from "./routes/faceit/index.js";
 import ping from "./routes/ping.js";
@@ -39,6 +40,11 @@ export default async function app() {
             loggerServiceUsers,
             loggerServiceBots,
           },
+        });
+
+        route.register(calender, {
+          prefix: "/calender",
+          config: { faceitApiService },
         });
       },
       { prefix: env.ROUTE_PREFIX },

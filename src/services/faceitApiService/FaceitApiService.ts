@@ -2,21 +2,26 @@ import moment from "moment";
 import { z } from "zod/v4";
 
 import env from "../../env.js";
+import CacheService from "../CacheService.js";
 import FetchService from "../FetchService.js";
 import {
   customCurrentMatchZodObject,
   customMatchDetailsZodObject,
+  matchReturnZodObject,
   playerZodObject,
 } from "./schemas.js";
-import type { GetFaceitType } from "./types.js";
+import type { GetFaceitType, MatchReturn } from "./types.js";
 
 moment.locale("de");
 
 const FACEIT_API_BASE_URL = "https://open.faceit.com/data/v4/" as const;
+const MATCHES_OFFSET = 100 as const;
 
 export default class FaceitApiService {
   fetchServiceV4: FetchService;
   fetchServiceCustom: FetchService;
+
+  private cacheService = new CacheService<MatchReturn["items"]>(60 * 60 * 1000);
 
   private constructor() {
     this.fetchServiceV4 = new FetchService(env.FACEIT_API_KEY);
@@ -225,6 +230,26 @@ export default class FaceitApiService {
     };
   }
 
+  async getTeamMatchesOfChampionship(teamId: string, championshipId: string) {
+    const response = await this.getMatchesOfChampionship(championshipId);
+
+    const matches = response.data
+      .filter((x) => {
+        const isFaction1 = x.teams.faction1.faction_id === teamId;
+        const isFaction2 = x.teams.faction2.faction_id === teamId;
+        return isFaction1 || isFaction2;
+      })
+      .map((x) => ({
+        start: (x.scheduled_at ?? 0) * 1000,
+        title: `${x.teams.faction1.name} vs ${x.teams.faction2.name}`,
+        description: `DACHCS Match:\n ${x.teams.faction1.name} vs ${x.teams.faction2.name}`,
+        duration: { hours: 2 },
+        url: x.faceit_url.replace("{lang}", "en"),
+      }));
+
+    return { success: true as const, data: matches };
+  }
+
   private async fetchPlayerByUuid(id: string) {
     const url = new URL(FACEIT_API_BASE_URL);
     url.pathname += `/players/${id}`;
@@ -370,6 +395,43 @@ export default class FaceitApiService {
     }
 
     return { success: true as const, data: matchId };
+  }
+
+  private async getMatchesOfChampionship(championshipId: string) {
+    const cached = this.cacheService.get(championshipId);
+    if (cached !== undefined) return { success: true as const, data: cached };
+
+    const url = new URL(FACEIT_API_BASE_URL);
+    url.pathname += `championships/${championshipId}/matches`;
+    url.searchParams.set("type", "all");
+    url.searchParams.set("limit", MATCHES_OFFSET.toString());
+    url.searchParams.set("offset", "0");
+
+    const matches: MatchReturn["items"] = [];
+    let offset = 0;
+    let hasMore = true;
+    do {
+      console.log(url.toString());
+      const response =
+        await this.fetchServiceV4.fetch<
+          GetFaceitType<"/championships/{championship_id}/matches">
+        >(url);
+      if (!response.success) break;
+
+      const zodResponse = matchReturnZodObject.safeParse(response.data);
+      if (!zodResponse.success) break;
+
+      matches.push(...zodResponse.data.items);
+
+      offset += MATCHES_OFFSET;
+      url.searchParams.set("offset", offset.toString());
+
+      hasMore = zodResponse.data.items.length === MATCHES_OFFSET;
+    } while (hasMore);
+
+    this.cacheService.set(championshipId, matches);
+
+    return { success: true as const, data: matches };
   }
 
   private static calculateGainLoss(
