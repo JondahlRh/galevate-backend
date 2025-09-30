@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 
+import type DachcsScraperService from "../../services/dachcsScraperService/DachcsScraperService.js";
 import type FaceitApiService from "../../services/faceitApiService/FaceitApiService.js";
 import customUrl from "./customUrl.js";
 import getSubscribeUrl from "./getSubscribeUrl.js";
@@ -7,6 +8,7 @@ import subscribeUrl from "./subscribeUrl.js";
 
 type Config = {
   faceitApiService: FaceitApiService;
+  dachcsScraperService: DachcsScraperService;
 };
 
 export default function calender(

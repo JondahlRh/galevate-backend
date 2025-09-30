@@ -5,6 +5,10 @@ const envObject = z.object({
   ROUTE_PREFIX: z.string().optional(),
   PORT: z.coerce.number().min(1).max(65535),
   FACEIT_API_KEY: z.uuidv4(),
+
+  DACHCS_USERNAME: z.string(),
+  DACHCS_PASSWORD: z.string(),
+  DACHCS_ORGANIZATION: z.string(),
 });
 
 const parsed = envObject.safeParse(process.env);

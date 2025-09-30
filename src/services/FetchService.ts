@@ -28,6 +28,7 @@ export default class FetchService {
   async fetch<T>(url: URL) {
     try {
       const response = await fetch(url, {
+        // @ts-expect-error: Added "DOM" to lib in tsconfig.json but code is executed in node
         headers: {
           Authorization: this.authHeader,
           "Content-Type": "application/json",

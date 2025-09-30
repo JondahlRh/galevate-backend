@@ -4,7 +4,9 @@ import ics from "ics";
 import { z } from "zod/v4";
 
 import customCalenderUrls from "../../constants/customCalenderUrls.js";
-import type FaceitApiService from "../../services/faceitApiService/FaceitApiService.js";
+import CalenderService from "../../services/CalenderService.js";
+import type DachcsScraperService from "../../services/dachcsScraperService/DachcsScraperService.js";
+import FaceitApiService from "../../services/faceitApiService/FaceitApiService.js";
 
 const ENUM_CUSTOM_CALENDAR_URLS = Object.values(customCalenderUrls).map(
   (x) => x.name,
@@ -12,13 +14,14 @@ const ENUM_CUSTOM_CALENDAR_URLS = Object.values(customCalenderUrls).map(
 
 type Config = {
   faceitApiService: FaceitApiService;
+  dachcsScraperService: DachcsScraperService;
 };
 
 export default function customUrl(
   app: FastifyInstance,
   options: { config: Config },
 ) {
-  const { faceitApiService } = options.config;
+  const { faceitApiService, dachcsScraperService } = options.config;
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
@@ -40,7 +43,19 @@ export default function customUrl(
           team.championshipId,
         );
 
-        data.push(...response.data);
+        const eventData = response.data.map((x) => {
+          const dachcsMatch = dachcsScraperService.matches.get(x.match_id);
+
+          return CalenderService.mapMatchEventData({
+            teamLeftName: x.teams.faction1.name,
+            teamRightName: x.teams.faction2.name,
+            scheduled_at: x.scheduled_at,
+            faceit_url: x.faceit_url,
+            dachcsMatch,
+          });
+        });
+
+        data.push(...eventData);
       }
 
       const event = ics.createEvents(data);

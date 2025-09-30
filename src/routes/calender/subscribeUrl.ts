@@ -3,17 +3,20 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import ics from "ics";
 import { z } from "zod/v4";
 
-import type FaceitApiService from "../../services/faceitApiService/FaceitApiService.js";
+import CalenderService from "../../services/CalenderService.js";
+import type DachcsScraperService from "../../services/dachcsScraperService/DachcsScraperService.js";
+import FaceitApiService from "../../services/faceitApiService/FaceitApiService.js";
 
 type Config = {
   faceitApiService: FaceitApiService;
+  dachcsScraperService: DachcsScraperService;
 };
 
 export default function subscribeUrl(
   app: FastifyInstance,
   options: { config: Config },
 ) {
-  const { faceitApiService } = options.config;
+  const { faceitApiService, dachcsScraperService } = options.config;
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
@@ -34,7 +37,19 @@ export default function subscribeUrl(
         championship,
       );
 
-      const event = ics.createEvents(response.data);
+      const eventData = response.data.map((x) => {
+        const dachcsMatch = dachcsScraperService.matches.get(x.match_id);
+
+        return CalenderService.mapMatchEventData({
+          teamLeftName: x.teams.faction1.name,
+          teamRightName: x.teams.faction2.name,
+          scheduled_at: x.scheduled_at,
+          faceit_url: x.faceit_url,
+          dachcsMatch,
+        });
+      });
+
+      const event = ics.createEvents(eventData);
       if (event.value === undefined) {
         return res.code(200).send("unknown error creating event");
       }

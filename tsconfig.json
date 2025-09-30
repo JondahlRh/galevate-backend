@@ -1,7 +1,8 @@
 {
   "extends": "@total-typescript/tsconfig/tsc/no-dom/app",
   "compilerOptions": {
-    "outDir": "build"
+    "outDir": "build",
+    "lib": ["DOM", "es2022"]
   },
   "include": ["src/**/*.ts"]
 }

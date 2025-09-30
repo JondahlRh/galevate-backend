@@ -1,4 +1,5 @@
 import fastify from "fastify";
+import { schedule } from "node-cron";
 
 import env from "./env.js";
 import middlewareCors from "./middlewares/cors.js";
@@ -8,11 +9,14 @@ import calender from "./routes/calender/index.js";
 import errorRoute from "./routes/error.js";
 import faceit from "./routes/faceit/index.js";
 import ping from "./routes/ping.js";
+import DachcsScraperService from "./services/dachcsScraperService/DachcsScraperService.js";
 import FaceitApiService from "./services/faceitApiService/FaceitApiService.js";
 import JsonLoggerService from "./services/jsonLoggerService/jsonLoggerService.js";
 
 export default async function app() {
   const faceitApiService = FaceitApiService.connect();
+
+  const dachcsScraperService = await DachcsScraperService.init();
 
   const loggerServicePlayerIds = JsonLoggerService.connect("playerIds.json");
   const loggerServiceUsers = JsonLoggerService.connect("users.json");
@@ -44,7 +48,7 @@ export default async function app() {
 
         route.register(calender, {
           prefix: "/calender",
-          config: { faceitApiService },
+          config: { faceitApiService, dachcsScraperService },
         });
       },
       { prefix: env.ROUTE_PREFIX },
@@ -52,6 +56,11 @@ export default async function app() {
   });
 
   errorRoute(app);
+
+  await dachcsScraperService.main();
+  schedule("0 * * * *", async () => {
+    await dachcsScraperService.main();
+  });
 
   await app.listen({ port: env.PORT, host: "0.0.0.0" });
 }

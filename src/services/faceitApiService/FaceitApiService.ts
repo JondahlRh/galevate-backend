@@ -233,19 +233,11 @@ export default class FaceitApiService {
   async getTeamMatchesOfChampionship(teamId: string, championshipId: string) {
     const response = await this.getMatchesOfChampionship(championshipId);
 
-    const matches = response.data
-      .filter((x) => {
-        const isFaction1 = x.teams.faction1.faction_id === teamId;
-        const isFaction2 = x.teams.faction2.faction_id === teamId;
-        return isFaction1 || isFaction2;
-      })
-      .map((x) => ({
-        start: (x.scheduled_at ?? 0) * 1000,
-        title: `${x.teams.faction1.name} vs ${x.teams.faction2.name}`,
-        description: `DACHCS Match:\n ${x.teams.faction1.name} vs ${x.teams.faction2.name}`,
-        duration: { hours: 2 },
-        url: x.faceit_url.replace("{lang}", "en"),
-      }));
+    const matches = response.data.filter((x) => {
+      const isFaction1 = x.teams.faction1.faction_id === teamId;
+      const isFaction2 = x.teams.faction2.faction_id === teamId;
+      return isFaction1 || isFaction2;
+    });
 
     return { success: true as const, data: matches };
   }

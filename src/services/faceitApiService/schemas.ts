@@ -38,6 +38,7 @@ export const customCurrentMatchZodObject = z.object({
 });
 
 const matchZodObject = z.object({
+  match_id: z.string(),
   scheduled_at: z.number().optional(),
   teams: z.object({
     faction1: z.object({ faction_id: z.string(), name: z.string() }),
