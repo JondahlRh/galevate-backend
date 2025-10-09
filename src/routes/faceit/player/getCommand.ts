@@ -24,7 +24,7 @@ export default function getCommand(
       response: { 200: z.any() },
     },
     handler: async (req, res) => {
-      const { bot = "nightbot" } = req.query;
+      const { bot } = req.query;
 
       const playerResponse = await faceitApiService.getPlayer(req.params.id);
 
@@ -46,7 +46,11 @@ export default function getCommand(
         return res.code(200).send(response);
       }
 
-      let response = "Bot not found, available bot(s): nightbot\n\n";
+      let response = `You can get the command for a specific bot when adding parameter 'bot':\n`;
+      response += `Possible 'bot' values: nightbot\n`;
+      response += `Example: ${fullUrlWithoutPath}/faceit/player/elo/${req.params.id}?bot=nightbot\n\n`;
+
+      response += `General usage for player ${player.nickname}:\n`;
       response += `Url to be used:                ${fullUrlWithoutPath}/faceit/player/elo/${player.player_id}\n`;
       response += `Url with optional querystring: ${fullUrlWithoutPath}/faceit/player/elo/${player.player_id}?nickname=<optional_querystring>\n\n`;
       response += `=> replace "<optional_querystring>" with bot specific variable\n`;
