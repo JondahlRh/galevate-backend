@@ -148,6 +148,11 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
         if (twitchName !== null) loggerServiceUsers.log(twitchName);
       }
 
+      const fossabotHeader = req.headers["x-fossabot-channellogin"];
+      if (fossabotHeader !== undefined && typeof fossabotHeader === "string") {
+        loggerServiceUsers.log(fossabotHeader);
+      }
+
       if (format === "json") {
         return res.code(200).send(returnData.toJson());
       }
