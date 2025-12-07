@@ -16,7 +16,7 @@ import JsonLoggerService from "./services/jsonLoggerService/jsonLoggerService.js
 export default async function app() {
   const faceitApiService = FaceitApiService.connect();
 
-  const dachcsScraperService = await DachcsScraperService.init();
+  // const dachcsScraperService = await DachcsScraperService.init();
 
   const loggerServicePlayerIds = JsonLoggerService.connect("playerIds.json");
   const loggerServiceUsers = JsonLoggerService.connect("users.json");
@@ -46,10 +46,10 @@ export default async function app() {
           },
         });
 
-        route.register(calender, {
-          prefix: "/calender",
-          config: { faceitApiService, dachcsScraperService },
-        });
+        // route.register(calender, {
+        //   prefix: "/calender",
+        //   config: { faceitApiService, dachcsScraperService },
+        // });
       },
       { prefix: env.ROUTE_PREFIX },
     );
@@ -57,9 +57,9 @@ export default async function app() {
 
   errorRoute(app);
 
-  await dachcsScraperService.main();
+  // await dachcsScraperService.main();
   schedule("0 * * * *", async () => {
-    await dachcsScraperService.main();
+    // await dachcsScraperService.main();
   });
 
   await app.listen({ port: env.PORT, host: "0.0.0.0" });
