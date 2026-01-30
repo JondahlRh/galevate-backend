@@ -30,7 +30,7 @@ export default function volanta(
 
       const flightUrl = await volantaService.getCurrentFlight(nickname);
       if (flightUrl === undefined) {
-        return res.code(404).send("No flight found");
+        return res.code(200).send("No flight found");
       }
       return res.code(200).send(flightUrl);
     },
