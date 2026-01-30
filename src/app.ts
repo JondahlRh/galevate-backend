@@ -9,12 +9,15 @@ import calender from "./routes/calender/index.js";
 import errorRoute from "./routes/error.js";
 import faceit from "./routes/faceit/index.js";
 import ping from "./routes/ping.js";
+import volanta from "./routes/volanta.js";
 import DachcsScraperService from "./services/dachcsScraperService/DachcsScraperService.js";
 import FaceitApiService from "./services/faceitApiService/FaceitApiService.js";
 import JsonLoggerService from "./services/jsonLoggerService/jsonLoggerService.js";
+import VolantaService from "./services/volantaService.js";
 
 export default async function app() {
   const faceitApiService = FaceitApiService.connect();
+  const volantaService = VolantaService.connect();
 
   // const dachcsScraperService = await DachcsScraperService.init();
 
@@ -44,6 +47,11 @@ export default async function app() {
             loggerServiceUsers,
             loggerServiceBots,
           },
+        });
+
+        route.register(volanta, {
+          prefix: "/volanta",
+          config: { volantaService },
         });
 
         // route.register(calender, {
