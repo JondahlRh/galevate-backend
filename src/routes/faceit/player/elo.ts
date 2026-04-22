@@ -102,7 +102,7 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
       }
 
       // get player today elo
-      if (!minimal || today) {
+      /* if (!minimal || today) {
         const response = await faceitApiService.getToday(
           player.player_id,
           game,
@@ -118,10 +118,10 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
             ),
           );
         }
-      }
+      } */
 
       // get player current elo
-      if (!minimal || current) {
+      /* if (!minimal || current) {
         const response = await faceitApiService.getCurrent(player.player_id);
         if (response.success) {
           returnData.addCurrent(
@@ -133,7 +133,7 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
             ),
           );
         }
-      }
+      } */
 
       loggerServicePlayerIds.log(player.player_id);
 
