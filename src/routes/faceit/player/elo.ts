@@ -75,7 +75,8 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
       // get player elo
       const gameData = player.games[game];
       if (gameData === undefined) {
-        return res.code(200).send(`player did not play ${game} yet`);
+        // `player did not play ${game} yet`
+        return res.code(200).send(returnData.toJson());
       }
       returnData.addLevel(gameData.skill_level).addElo(gameData.faceit_elo);
 
@@ -88,7 +89,8 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
           player.country,
         );
         if (!response.success) {
-          return res.code(200).send(`player did not play ${game} yet`);
+          // `player did not play ${game} yet`
+          return res.code(200).send(returnData.toJson());
         }
 
         returnData.addCountry(
