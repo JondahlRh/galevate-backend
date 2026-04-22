@@ -76,7 +76,10 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
       const gameData = player.games[game];
       if (gameData === undefined) {
         // `player did not play ${game} yet`
-        return res.code(200).send(returnData.toJson());
+        if (format === "json") {
+          return res.code(200).send(returnData.toJson());
+        }
+        return res.code(200).send(returnData.toText());
       }
       returnData.addLevel(gameData.skill_level).addElo(gameData.faceit_elo);
 
@@ -90,7 +93,10 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
         );
         if (!response.success) {
           // `player did not play ${game} yet`
-          return res.code(200).send(returnData.toJson());
+          if (format === "json") {
+            return res.code(200).send(returnData.toJson());
+          }
+          return res.code(200).send(returnData.toText());
         }
 
         returnData.addCountry(
