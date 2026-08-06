@@ -10,7 +10,7 @@ import ping from "./routes/ping.js";
 import volanta from "./routes/volanta.js";
 import VolantaService from "./services/VolantaService.js";
 import FaceitApiService from "./services/faceitApiService/FaceitApiService.js";
-import JsonLoggerService from "./services/jsonLoggerService/jsonLoggerService.js";
+import JsonLoggerService from "./services/jsonLoggerService/JsonLoggerService.js";
 
 export default async function app() {
   const faceitApiService = FaceitApiService.connect();

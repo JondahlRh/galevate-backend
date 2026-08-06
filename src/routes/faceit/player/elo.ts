@@ -6,7 +6,7 @@ import FaceitPlayerEloDto, {
   FaceitPlayerEloRankingDto,
 } from "../../../classes/FaceitPlayerEloDto.js";
 import type FaceitApiService from "../../../services/faceitApiService/FaceitApiService.js";
-import type JsonLoggerService from "../../../services/jsonLoggerService/jsonLoggerService.js";
+import type JsonLoggerService from "../../../services/jsonLoggerService/JsonLoggerService.js";
 
 type Config = {
   faceitApiService: FaceitApiService;
