@@ -3,9 +3,7 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod/v4";
 
 import FaceitPlayerEloDto, {
-  FaceitPlayerEloCurrentDto,
   FaceitPlayerEloRankingDto,
-  FaceitPlayerEloTodayDto,
 } from "../../../classes/FaceitPlayerEloDto.js";
 import type FaceitApiService from "../../../services/faceitApiService/FaceitApiService.js";
 import type JsonLoggerService from "../../../services/jsonLoggerService/jsonLoggerService.js";
@@ -106,40 +104,6 @@ export default function elo(app: FastifyInstance, options: { config: Config }) {
           new FaceitPlayerEloRankingDto(gameData.region, response.data.region),
         );
       }
-
-      // get player today elo
-      /* if (!minimal || today) {
-        const response = await faceitApiService.getToday(
-          player.player_id,
-          game,
-          gameData.faceit_elo,
-        );
-
-        if (response.success) {
-          returnData.addToday(
-            new FaceitPlayerEloTodayDto(
-              response.data.matches,
-              response.data.hasWonArray,
-              response.data.today,
-            ),
-          );
-        }
-      } */
-
-      // get player current elo
-      /* if (!minimal || current) {
-        const response = await faceitApiService.getCurrent(player.player_id);
-        if (response.success) {
-          returnData.addCurrent(
-            new FaceitPlayerEloCurrentDto(
-              response.data.name,
-              response.data.map,
-              response.data.gain,
-              response.data.loss,
-            ),
-          );
-        }
-      } */
 
       loggerServicePlayerIds.log(player.player_id);
 

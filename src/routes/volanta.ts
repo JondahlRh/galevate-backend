@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod/v4";
 
-import type VolantaService from "../services/volantaService.js";
+import type VolantaService from "../services/VolantaService.js";
 
 type Config = {
   volantaService: VolantaService;
